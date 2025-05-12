@@ -1,11 +1,11 @@
 import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
 
-export type HelloWorldConfig = {
+export type CounterConfig = {
     id: number;
     counter: number;
 };
 
-export function helloWorldConfigToCell(config: HelloWorldConfig): Cell {
+export function helloWorldConfigToCell(config: CounterConfig): Cell {
     return beginCell().storeUint(config.id, 32).storeUint(config.counter, 32).endCell();
 }
 
@@ -13,17 +13,17 @@ export const Opcodes = {
     increase: 0x7e8764ef,
 };
 
-export class HelloWorld implements Contract {
-    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
+export class Counter implements Contract {
+    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) { }
 
     static createFromAddress(address: Address) {
-        return new HelloWorld(address);
+        return new Counter(address);
     }
 
-    static createFromConfig(config: HelloWorldConfig, code: Cell, workchain = 0) {
+    static createFromConfig(config: CounterConfig, code: Cell, workchain = 0) {
         const data = helloWorldConfigToCell(config);
         const init = { code, data };
-        return new HelloWorld(contractAddress(workchain, init), init);
+        return new Counter(contractAddress(workchain, init), init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, value: bigint) {

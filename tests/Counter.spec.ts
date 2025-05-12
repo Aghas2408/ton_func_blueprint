@@ -1,25 +1,25 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
 import { Cell, toNano } from '@ton/core';
-import { HelloWorld } from '../wrappers/HelloWorld';
+import { Counter } from '../wrappers/Counter';
 import '@ton/test-utils';
 import { compile } from '@ton/blueprint';
 
-describe('HelloWorld', () => {
+describe('Counter', () => {
     let code: Cell;
 
     beforeAll(async () => {
-        code = await compile('HelloWorld');
+        code = await compile('Counter');
     });
 
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
-    let helloWorld: SandboxContract<HelloWorld>;
+    let counter: SandboxContract<Counter>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        helloWorld = blockchain.openContract(
-            HelloWorld.createFromConfig(
+        counter = blockchain.openContract(
+            Counter.createFromConfig(
                 {
                     id: 0,
                     counter: 0,
@@ -30,11 +30,11 @@ describe('HelloWorld', () => {
 
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await helloWorld.sendDeploy(deployer.getSender(), toNano('0.05'));
+        const deployResult = await counter.sendDeploy(deployer.getSender(), toNano('0.05'));
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
-            to: helloWorld.address,
+            to: counter.address,
             deploy: true,
             success: true,
         });
@@ -52,7 +52,7 @@ describe('HelloWorld', () => {
 
             const increaser = await blockchain.treasury('increaser' + i);
 
-            const counterBefore = await helloWorld.getCounter();
+            const counterBefore = await counter.getCounter();
 
             console.log('counter before increasing', counterBefore);
 
@@ -60,18 +60,18 @@ describe('HelloWorld', () => {
 
             console.log('increasing by', increaseBy);
 
-            const increaseResult = await helloWorld.sendIncrease(increaser.getSender(), {
+            const increaseResult = await counter.sendIncrease(increaser.getSender(), {
                 increaseBy,
                 value: toNano('0.05'),
             });
 
             expect(increaseResult.transactions).toHaveTransaction({
                 from: increaser.address,
-                to: helloWorld.address,
+                to: counter.address,
                 success: true,
             });
 
-            const counterAfter = await helloWorld.getCounter();
+            const counterAfter = await counter.getCounter();
 
             console.log('counter after increasing', counterAfter);
 

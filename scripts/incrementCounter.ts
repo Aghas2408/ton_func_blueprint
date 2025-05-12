@@ -1,5 +1,5 @@
 import { Address, toNano } from '@ton/core';
-import { HelloWorld } from '../wrappers/HelloWorld';
+import { Counter } from '../wrappers/Counter';
 import { NetworkProvider, sleep } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
@@ -12,23 +12,23 @@ export async function run(provider: NetworkProvider, args: string[]) {
         return;
     }
 
-    const helloWorld = provider.open(HelloWorld.createFromAddress(address));
+    const counter = provider.open(Counter.createFromAddress(address));
 
-    const counterBefore = await helloWorld.getCounter();
+    const counterBefore = await counter.getCounter();
 
-    await helloWorld.sendIncrease(provider.sender(), {
+    await counter.sendIncrease(provider.sender(), {
         increaseBy: 1,
         value: toNano('0.05'),
     });
 
     ui.write('Waiting for counter to increase...');
 
-    let counterAfter = await helloWorld.getCounter();
+    let counterAfter = await counter.getCounter();
     let attempt = 1;
     while (counterAfter === counterBefore) {
         ui.setActionPrompt(`Attempt ${attempt}`);
         await sleep(2000);
-        counterAfter = await helloWorld.getCounter();
+        counterAfter = await counter.getCounter();
         attempt++;
     }
 
